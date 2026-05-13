@@ -58,8 +58,36 @@
             </p>
         {% endfor %}
     </p>
-    <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+    <p>{{ form.submit(type="submit", class="btn btn-primary", onclick="getData(event)")}}</p>
     {{message}}
+    <script>
+        async function getData(event) {
+            event.preventDefault();
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    name: document.querySelector('name="name"').value,
+                    age: document.querySelector('name="age"').value,
+                    email: document.querySelector('[name="email"]').value,
+                    password: document.querySelector('[name="password"]').value,
+                    password_again: document.querySelector('[name="password_again"]').value
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                localStorage.setItem('access_token', data.access_token);
+                localStorage.setItem('refresh_token', data.refresh_token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                window.location.href = '/mainpage';
+            }
+            else{
+                document.getElementById("message").innerHTML = `<p> ${data.ERROR} </p>`
+            }
+        }
+    </script>
 </form>
 </body>
 </html>

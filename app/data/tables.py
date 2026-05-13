@@ -11,7 +11,7 @@ class Table(SerializerMixin, SqlAlchemyBase):
     id = sqlalchemy.Column(sqlalchemy.Integer,
                            primary_key=True, autoincrement=True)
 
-    name = sqlalchemy.Column(sqlalchemy.String)
+    name = sqlalchemy.Column(sqlalchemy.String) # название таблицы характеризует цель
 
     trainings = sqlalchemy.Column(sqlalchemy.JSON, nullable=True)
 

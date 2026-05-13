@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+          crossorigin="anonymous">
+    <title>Авторизация</title>
+</head>
+<body>
+    <h1>Авторизация</h1>
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.email.label }}<br>
+            {{ form.email(class="form-control", type="email") }}<br>
+            {% for error in form.email.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.password.label }}<br>
+            {{ form.password(class="form-control", type="password") }}<br>
+            {% for error in form.password.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>{{ form.remember_me() }} {{ form.remember_me.label }}</p>
+        <p>{{ form.submit(type="submit", class="btn btn-primary", onclick="getData(event)") }}</p>
+        <div id="message">{{ message }}</div>
+    </form>
+    <script>
+        async function getData(event) {
+            event.preventDefault();
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    email: document.querySelector('[name="email"]').value,
+                    password: document.querySelector('[name="password"]').value,
+                    remember_me: document.querySelector('[name="remember_me"]').checked
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok){
+                const token = data.access_token;
+                const userName = data.user.name;
+                const userEmail = data.user.email;
+
+                console.log('Токен:', token);
+                console.log('Имя:', userName);
+
+                document.getElementById('message').innerHTML = `
+                    <p> Имя: ${userName} </p>
+                    <p> Email: ${userEmail} </p>
+                    <p> Токен: ${token.substring(0, 20)}... </p>
+                `;
+                localStorage.setItem('access_token', data.access_token);
+                localStorage.setItem('refresh_token', data.refresh_token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                window.location.href = '/mainpage';
+            }
+            else{
+                document.getElementById("message").innerHTML = `<p> ${data.ERROR} </p>`
+            }
+        }
+    </script>
+</body>
+</html>
