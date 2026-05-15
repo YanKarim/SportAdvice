@@ -43,13 +43,11 @@ class RegisterResources(Resource):
         )
         user.set_password(args["password"])
 
-        access_token = create_access_token(identity=str(user.id))
-        refresh_token = create_refresh_token(identity=str(user.id))
-
         try:
             db_sess.add(user)
             db_sess.commit()
-            db_sess.close()
+            access_token = create_access_token(identity=str(user.id))
+            refresh_token = create_refresh_token(identity=str(user.id))
             return {"status": "SUCCESS!", "access_token": access_token, "refresh_token": refresh_token,
                     "user": {"id": user.id, "name": user.name}}, 201
 
