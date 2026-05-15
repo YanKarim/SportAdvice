@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+          crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}"/>
+    <title>Главная</title>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <div class="navbar-nav">
+                <a class="nav-link" href="/mainpage">Главная</a>
+                <a class="nav-link" href="/sport">Спорт</a>
+                <a class="nav-link" href="/food">Питание</a>
+                <a class="nav-link" href="/profile">Профиль</a>
+            </div>
+        </div>
+    </nav>
+    <div id="name"></div>
+    <input id="tableName" class="form-control mx-auto text-center" style="width: 50%;"/>
+    <br>
+    <div id="table"></div>
+    <div id="message"></div>
+    <script>
+        async function refreshToken() {
+            const refreshToken = localStorage.getItem('refresh_token');
+            
+            console.log('refreshToken в localStorage:', refreshToken ? 'ЕСТЬ' : 'НЕТ');
+    
+            if (!refreshToken) {
+                console.log('Нет refresh_token');
+                return false;
+            }
+            
+            const response = await fetch('/api/refresh', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${refreshToken}`
+                }
+            });
+                
+            if (response.ok) {
+                const data = await response.json();
+                localStorage.setItem('access_token', data.access_token);
+                console.log('Токен обновлен');
+                return true;
+            }
+            return false;
+        }
+        async function authFetch(url, options = {}) {
+
+            let token = localStorage.getItem('access_token');
+
+            if (!token){
+                window.location.href = '/login';
+                return null;
+            }
+            
+            options.headers = {
+                ...options.headers,
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            let response = await fetch(url, options);
+            
+            if (response.status === 401 || response.status === 500) {
+                
+                const refreshed = await refreshToken();
+                
+                if (refreshed) {
+                    token = localStorage.getItem('access_token');
+                    options.headers['Authorization'] = `Bearer ${token}`;
+                    response = await fetch(url, options);
+                } else {
+                    localStorage.clear();
+                    window.location.href = '/login';
+                    return null;
+                }
+            }
+            
+            return response;
+        }
+
+        function autoPut(){
+            const textareas = document.querySelectorAll('#table textarea');
+        textareas.forEach(textarea => {
+            textarea.addEventListener('blur', async function() {
+
+                const updateFood = {
+                "Понедельник": document.getElementById('eMonday')?.value,
+                "Вторник": document.getElementById('eTuesday')?.value,
+                "Среда": document.getElementById('eWednesday')?.value,
+                "Четверг": document.getElementById('eThursday')?.value,
+                "Пятница": document.getElementById('eFriday')?.value,
+                "Суббота": document.getElementById('eSaturday')?.value,
+                "Воскресенье": document.getElementById('eSunday')?.value
+                };
+
+                const updateTrainings = {
+                    "Понедельник": document.getElementById('tMonday')?.value,
+                    "Вторник": document.getElementById('tTuesday')?.value,
+                    "Среда": document.getElementById('tWednesday')?.value,
+                    "Четверг": document.getElementById('tThursday')?.value,
+                    "Пятница": document.getElementById('tFriday')?.value,
+                    "Суббота": document.getElementById('tSaturday')?.value,
+                    "Воскресенье": document.getElementById('tSunday')?.value
+                };
+            
+                await authFetch('/api/table', {
+                    method: 'PUT',
+                    body: JSON.stringify({food: updateFood, trainings: updateTrainings})
+                });
+            })
+        })
+        }
+
+        document.addEventListener('DOMContentLoaded', async function getData() {
+            let user = localStorage.getItem('user');
+            let token = localStorage.getItem('access_token');
+
+            if (!token) {
+                document.getElementById('name').innerHTML = `<a href="/login" class="btn btn-success">Войти</a>
+                                                            <a href="/register" class="btn btn-success">Регистрация</a>`;
+                document.getElementById('table').innerHTML = `<p><strong> Что бы использовать таблицу, войдите в аккаунт </strong></p>`;
+                return;
+            }
+            else {
+                const response = await authFetch("/api/table", {
+                    method: 'GET',
+                    });
+                    const data = await response.json();
+                 if (response.ok) {
+                    const trainings = data.trainings;
+                    const food = data.food;
+                    const userData = JSON.parse(user);
+                    document.getElementById('name').innerText = `${userData.name}`;
+                    document.getElementById('tableName').value = data.name;
+                    document.getElementById('table').innerHTML = `<table class="table table-bordered table-hover table-striped">
+                                                                    <thead class="text-center">
+                                                                        <tr>
+                                                                            <th></th>
+                                                                            <th>Понедельник</th>
+                                                                            <th>Вторник</th>
+                                                                            <th>Среда</th>
+                                                                            <th>Четверг</th>
+                                                                            <th>Пятница</th>
+                                                                            <th>Суббота</th>
+                                                                            <th>Воскресенье</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <th>Тренировка</th>
+                                                                            <td><textarea id="tMonday" rows="7">${trainings['Понедельник']}</textarea></td>
+                                                                            <td><textarea id="tTuesday" rows="7">${trainings['Вторник']}</textarea></td>
+                                                                            <td><textarea id="tWednesday" rows="7">${trainings['Среда']}</textarea></td>
+                                                                            <td><textarea id="tThursday" rows="7">${trainings['Четверг']}</textarea></td>
+                                                                            <td><textarea id="tFriday" rows="7">${trainings['Пятница']}</textarea></td>
+                                                                            <td><textarea id="tSaturday" rows="7">${trainings['Суббота']}</textarea></td>
+                                                                            <td><textarea id="tSunday" rows="7">${trainings['Воскресенье']}</textarea></td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th>Еда</th>
+                                                                            <td><textarea id="eMonday" rows="7">${food['Понедельник']}</textarea></td>
+                                                                            <td><textarea id="eTuesday" rows="7">${food['Вторник']}</textarea></td>
+                                                                            <td><textarea id="eWednesday" rows="7">${food['Среда']}</textarea></td>
+                                                                            <td><textarea id="eThursday" rows="7">${food['Четверг']}</textarea></td>
+                                                                            <td><textarea id="eFriday" rows="7">${food['Пятница']}</textarea></td>
+                                                                            <td><textarea id="eSaturday" rows="7">${food['Суббота']}</textarea></td>
+                                                                            <td><textarea id="eSunday" rows="7">${food['Воскресенье']}</textarea></td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>`;
+                                                                autoPut();
+                                                            }
+                else{
+                    document.getElementById("message").innerHTML = `<p> ${data.ERROR} </p>` // позже заменю на всплывающее окно
+                }
+            }
+        });
+        document.getElementById('tableName').addEventListener('blur', async function putData() {
+            const newTableName = this.value;
+            const token = localStorage.getItem('access_token');
+            
+            await authFetch('/api/table', {
+                method: 'PUT',
+                body: JSON.stringify({name: newTableName})
+            });
+        });
+    </script>
+</body>
+</html>

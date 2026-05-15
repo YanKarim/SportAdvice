@@ -169,7 +169,7 @@ class TableResources(Resource):
             db_sess.add(table)
             db_sess.commit()
 
-        return {"name": table.name, "trainings": table.trainings, "food": table.food}
+        return {"name": table.name, "trainings": table.trainings, "food": table.food}, 200
 
     @jwt_required()
     def post(self):
