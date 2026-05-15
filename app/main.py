@@ -84,6 +84,10 @@ def training():
 def food():
     return render_template("/healthy food/food.html", title="Питание")
 
+@app.route('/food/podderganie')
+def podderganie():
+    return render_template("/healthy food/podderganie.html", title="Поддержание")
+
 
 if '__main__' == __name__:
     main()
