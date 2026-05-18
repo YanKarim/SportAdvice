@@ -3,4 +3,5 @@ sqlalchemy
 flask-wtf
 flask-login
 flask-restful
+flask-jwt-extended
 python-dotenv
