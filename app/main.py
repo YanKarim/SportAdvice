@@ -89,6 +89,26 @@ def food():
 def podderganie():
     return render_template("/healthy food/podderganie.html", title="Поддержание")
 
+@app.route('/sport/chest')
+def chest():
+    return "Здесь пока пусто, но скоро здесь что-то появится"
+
+@app.route('/sport/back')
+def back():
+    return "Здесь пока пусто, но скоро здесь что-то появится"
+
+@app.route('/sport/leg')
+def leg():
+    return "Здесь пока пусто, но скоро здесь что-то появится"
+
+@app.route('/sport/arm')
+def arm():
+    return render_template("/training/arm_training.html", title="Качаем руки")
+
+@app.route('/sport/press')
+def press():
+    return render_template("/training/press_training.html", title="Качаем пресс")
+
 
 if '__main__' == __name__:
     main()

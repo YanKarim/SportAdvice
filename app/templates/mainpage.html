@@ -21,8 +21,8 @@
             </div>
         </div>
     </nav>
-    <div id="name"></div>
-    <input id="tableName" class="form-control mx-auto text-center" style="width: 50%;"/>
+    <div id="name" style="text-align: right; margin-top: 10px; margin-right: 10px;"></div>
+    <div id="tableNameField"></div>
     <br>
     <div id="table"></div>
     <div id="message"></div>
@@ -127,7 +127,7 @@
             if (!token) {
                 document.getElementById('name').innerHTML = `<a href="/login" class="btn btn-success">Войти</a>
                                                             <a href="/register" class="btn btn-success">Регистрация</a>`;
-                document.getElementById('table').innerHTML = `<p><strong> Что бы использовать таблицу, войдите в аккаунт </strong></p>`;
+                document.getElementById('table').innerHTML = `<p style="text-align: center;"><strong> Что бы использовать таблицу, войдите в аккаунт </strong></p>`;
                 return;
             }
             else {
@@ -140,6 +140,7 @@
                     const food = data.food;
                     const userData = JSON.parse(user);
                     document.getElementById('name').innerText = `${userData.name}`;
+                    document.getElementById('tableNameField').innerHTML = `<input id="tableName" class="form-control mx-auto text-center" style="width: 50%;"/>`;
                     document.getElementById('tableName').value = data.name;
                     document.getElementById('table').innerHTML = `<table class="table table-bordered table-hover table-striped">
                                                                     <thead class="text-center">
