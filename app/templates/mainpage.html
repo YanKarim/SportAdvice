@@ -142,6 +142,17 @@
                     document.getElementById('name').innerText = `${userData.name}`;
                     document.getElementById('tableNameField').innerHTML = `<input id="tableName" class="form-control mx-auto text-center" style="width: 50%;"/>`;
                     document.getElementById('tableName').value = data.name;
+                    document.getElementById('tableName').addEventListener('blur', async function putData() {
+                        const newTableName = this.value;
+                        if (newTableName){
+                            const token = localStorage.getItem('access_token');
+                            
+                            await authFetch('/api/table', {
+                                method: 'PUT',
+                                body: JSON.stringify({name: newTableName})
+                            });
+                        }
+                    });
                     document.getElementById('table').innerHTML = `<table class="table table-bordered table-hover table-striped">
                                                                     <thead class="text-center">
                                                                         <tr>
@@ -184,15 +195,6 @@
                     document.getElementById("message").innerHTML = `<p> ${data.ERROR} </p>` // позже заменю на всплывающее окно
                 }
             }
-        });
-        document.getElementById('tableName').addEventListener('blur', async function putData() {
-            const newTableName = this.value;
-            const token = localStorage.getItem('access_token');
-            
-            await authFetch('/api/table', {
-                method: 'PUT',
-                body: JSON.stringify({name: newTableName})
-            });
         });
     </script>
 </body>
